@@ -2,9 +2,9 @@
   "name": "rewards-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "sample.js",
   "scripts": {
-    "build": "jest && babel src --out-dir lib",
+    "run-sample": "babel-node src/sample.js",
     "test": "jest --watch",
     "lint": "eslint src --fix"
   },
@@ -12,7 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "=6.26.0",
-    "babel-eslint": "^8.2.3",
+    "babel-eslint": "=8.2.3",
     "babel-jest": "=23.0.1",
     "babel-plugin-transform-class-properties": "=6.24.1",
     "babel-preset-env": "=1.7.0",
@@ -23,5 +23,8 @@
     "eslint-plugin-promise": "=3.8.0",
     "eslint-plugin-standard": "=3.1.0",
     "jest": "=23.1.0"
+  },
+  "dependencies": {
+    "express": "=4.16.3"
   }
 }

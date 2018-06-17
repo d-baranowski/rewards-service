@@ -1,11 +1,11 @@
 class ApplicationError extends Error {
-  constructor (message) {
-    super(message)
+    constructor (message) {
+        super(message)
 
-    this.name = this.constructor.name
+        this.name = this.constructor.name
 
-    Error.captureStackTrace(this, this.constructor)
-  }
+        Error.captureStackTrace(this, this.constructor)
+    }
 }
 
 export default ApplicationError

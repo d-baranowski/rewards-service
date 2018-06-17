@@ -1,9 +1,9 @@
 const CHANNELS = Object.freeze({
-  SPORTS: Symbol('SPORTS'),
-  KIDS: Symbol('KIDS'),
-  MUSIC: Symbol('MUSIC'),
-  NEWS: Symbol('NEWS'),
-  MOVIES: Symbol('MOVIES')
+    SPORTS: 'SPORTS',
+    KIDS: 'KIDS',
+    MUSIC: 'MUSIC',
+    NEWS: 'NEWS',
+    MOVIES: 'MOVIES'
 })
 
 export default CHANNELS

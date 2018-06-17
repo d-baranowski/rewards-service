@@ -3,5 +3,8 @@ module.exports = {
     "parser": "babel-eslint",
     "env": {
         "jest": true
+    },
+    "rules": {
+        "indent": ["error", 4]
     }
 };
