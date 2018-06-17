@@ -1,1 +1,2 @@
-export Channels from './Channels'
+import CHANNELS from './Channels'
+export {CHANNELS}

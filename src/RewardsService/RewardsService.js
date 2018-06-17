@@ -1,10 +1,10 @@
 import REWARDS from './Rewards'
 import ELIGIBILITY_SERVICE_OUTPUT from './EligibilitySericeOutput'
 import {IncorrectEligibilityServiceError, EligibilityServiceTechnicalFailureError} from './Errors'
-import CHANNELS from '../Business/Channels'
-import ArgumentInvalidError from '../Errors/ArgumentInvalidError'
+import {CHANNELS} from '../Business'
+import {ArgumentInvalidError} from '../Errors'
 
-export default class RewardsService {
+class RewardsService {
   constructor (eligibilityService) {
     if (!eligibilityService || !eligibilityService.checkRewardsEligibilityByAccountNumber) {
       throw new IncorrectEligibilityServiceError()
@@ -49,8 +49,8 @@ export default class RewardsService {
       if (!accountNumber) {
         throw new ArgumentInvalidError('No accountNumber provided')
       }
-      if (!channelSubscriptions || !typeof channelSubscriptions[Symbol.iterator] === 'function') {
-        throw new ArgumentInvalidError('channelSubscriptions need to be iterable')
+      if (!Array.isArray(channelSubscriptions)) {
+        throw new ArgumentInvalidError('channelSubscriptions need to be an array')
       }
     };
 
@@ -70,3 +70,5 @@ export default class RewardsService {
       }
     }
 }
+
+export default RewardsService;

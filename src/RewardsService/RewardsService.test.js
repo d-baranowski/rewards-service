@@ -9,9 +9,9 @@ import {
 } from './Errors'
 import {ArgumentInvalidError} from '../Errors'
 
-const { SPORTS, MUSIC, MOVIES, NEWS, KIDS } = CHANNELS
-const { KARAOKE_PRO_MICROPHONE, CHAMPIONS_LEAGUE_FINAL_TICKET, PIRATES_OF_THE_CARIBBEAN_COLLECTION } = REWARDS
-const { CUSTOMER_ELIGIBLE, CUSTOMER_INELIGIBLE } = ELIGIBILITY_SERVICE_OUTPUT
+const {SPORTS, MUSIC, MOVIES, NEWS, KIDS} = CHANNELS
+const {KARAOKE_PRO_MICROPHONE, CHAMPIONS_LEAGUE_FINAL_TICKET, PIRATES_OF_THE_CARIBBEAN_COLLECTION} = REWARDS
+const {CUSTOMER_ELIGIBLE, CUSTOMER_INELIGIBLE} = ELIGIBILITY_SERVICE_OUTPUT
 
 const instantiationSuccess = () => {
   const eligibilityService = {
@@ -69,12 +69,14 @@ const returnRelevantRewards = () => {
     expect(result).toContain(PIRATES_OF_THE_CARIBBEAN_COLLECTION)
   })
 
-  test("RewardsService doesn't return incorrect rewards", async () => {
+  test('RewardsService doesn\'t return incorrect rewards', async () => {
+    expect.assertions(1)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [SPORTS])
     expect(result).not.toContain(KARAOKE_PRO_MICROPHONE)
   })
 
   test('RewardsService returns correct rewards for multiple channels', async () => {
+    expect.assertions(2)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [
       SPORTS, MUSIC, MOVIES, NEWS, KIDS
     ])
@@ -85,9 +87,10 @@ const returnRelevantRewards = () => {
   })
 
   test('RewardsService returns no rewards for no channels', async () => {
-      const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, []);
-      expect(result.length).toBe(0)
-  });
+    expect.assertions(1)
+    const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [])
+    expect(result.length).toBe(0)
+  })
 
   argumentPassingTest(rewardsService, accountNumber, eligibilityService)
 }
@@ -101,27 +104,31 @@ const returnNoRewardsWith = (eligibilityService) => () => {
   })
 
   test('RewardsService returns no rewards for SPORTS', async () => {
+    expect.assertions(1)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [SPORTS])
     expect(result.length).toBe(0)
   })
 
   test('RewardsService returns no rewards for MUSIC', async () => {
+    expect.assertions(1)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MUSIC])
     expect(result.length).toBe(0)
   })
 
   test('RewardsService returns no rewards for MOVIES', async () => {
+    expect.assertions(1)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MOVIES])
     expect(result.length).toBe(0)
   })
 
   test('RewardsService returns no rewards for multiple channels', async () => {
+    expect.assertions(1)
     const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MOVIES, MUSIC])
     expect(result.length).toBe(0)
   })
 }
 
-const exceptionalBehaviour = async () => {
+const exceptionalBehaviour = () => {
   const eligibilityService = {
     checkRewardsEligibilityByAccountNumber:
             jest.fn().mockResolvedValue(CUSTOMER_ELIGIBLE)
@@ -135,28 +142,32 @@ const exceptionalBehaviour = async () => {
   })
 
   test('RewardsService throws InvalidArguments error when no parameters are provided', async () => {
-    expect(rewardsService.getRewardsByAccountNumberAndSubscriptions())
-      .rejects.toEqual(new ArgumentInvalidError())
+    expect.assertions(1)
+    await expect(rewardsService.getRewardsByAccountNumberAndSubscriptions())
+      .rejects.toEqual(new ArgumentInvalidError('No accountNumber provided'))
   })
 
   test('RewardsService throws InvalidArguments error when only account number is provided', async () => {
-    expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber))
-      .rejects.toEqual(new ArgumentInvalidError())
+    expect.assertions(1)
+    await expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber))
+      .rejects.toEqual(new ArgumentInvalidError('channelSubscriptions need to be an array'))
   })
 
   test('RewardsService throws InvalidArguments error when only subscriptions are provided', async () => {
-    expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([]))
-      .rejects.toEqual(new ArgumentInvalidError())
+    expect.assertions(1)
+    await expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([]))
+      .rejects.toEqual(new ArgumentInvalidError('channelSubscriptions need to be an array'))
   })
 
   test('RewardsService throws InvalidArguments error when arguments arrive in different order', async () => {
-    expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([], accountNumber))
-      .rejects.toEqual(new ArgumentInvalidError())
+    expect.assertions(1)
+    await expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([], accountNumber))
+      .rejects.toEqual(new ArgumentInvalidError('channelSubscriptions need to be an array'))
   })
 }
 
 const handleInvalidAccountNumber = async () => {
-  const accountNumber = "I'm invalid"
+  const accountNumber = 'I\'m invalid'
 
   const eligibilityService = {
     checkRewardsEligibilityByAccountNumber:
@@ -166,8 +177,9 @@ const handleInvalidAccountNumber = async () => {
   const rewardsService = new RewardsService(eligibilityService)
 
   test('RewardsService throws InvalidArguments error when only subscriptions are provided', async () => {
-    expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, []))
-      .rejects.toEqual(new InvalidAccountNumberError())
+    expect.assertions(1)
+    await expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, []))
+      .rejects.toEqual(new InvalidAccountNumberError(accountNumber))
   })
 }
 
@@ -184,7 +196,7 @@ describe('RewardsService', () => {
   describe('Given the EligibilityService returns CUSTOMER_INELIGIBLE then return no rewards',
     returnNoRewardsWith({
       checkRewardsEligibilityByAccountNumber:
-                    jest.fn().mockImplementation(() => Promise.resolve(CUSTOMER_INELIGIBLE))
+                jest.fn().mockImplementation(() => Promise.resolve(CUSTOMER_INELIGIBLE))
     })
   )
   describe('Given the EligibilityService throws InvalidAccountNumber then return no rewards and notify the client',
