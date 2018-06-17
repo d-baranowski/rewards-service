@@ -3,6 +3,7 @@ import {EligibilityServiceTechnicalFailureError, ELIGIBILITY_SERVICE_OUTPUT} fro
 import CHANNELS from './Channels';
 import REWARDS from './Rewards';
 import {IncorrectEligibilityServiceError} from './RewardsService.errors';
+import ArgumentInvalidError from './ArgumentInvalidError';
 
 const { SPORTS, MUSIC, MOVIES } = CHANNELS;
 const { KARAOKE_PRO_MICROPHONE, CHAMPIONS_LEAGUE_FINAL_TICKET, PIRATES_OF_THE_CARIBBEAN_COLLECTION } = REWARDS;
@@ -98,9 +99,43 @@ const returnNoRewardsWith = (eligibilityService) => () => {
     });
 };
 
+const exceptionalBehaviour = async () => {
+    const eligibilityService = {
+        checkRewardsEligibilityByAccountNumber:
+            jest.fn().mockResolvedValue(CUSTOMER_ELIGIBLE)
+    };
+
+    const rewardsService = new RewardsService(eligibilityService);
+    const accountNumber = 415124;
+
+    beforeEach(() => {
+        eligibilityService.checkRewardsEligibilityByAccountNumber.mockClear()
+    });
+
+    test("RewardsService throws InvalidArguments error when no parameters are provided", async () => {
+        expect(rewardsService.getRewardsByAccountNumberAndSubscriptions())
+            .rejects.toEqual(new ArgumentInvalidError())
+    });
+
+    test("RewardsService throws InvalidArguments error when only account number is provided", async () => {
+        expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber))
+            .rejects.toEqual(new ArgumentInvalidError())
+    });
+
+    test("RewardsService throws InvalidArguments error when only subscriptions are provided", async () => {
+        expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([]))
+            .rejects.toEqual(new ArgumentInvalidError())
+    });
+
+    test("RewardsService throws InvalidArguments error when arguments arrive in different order", async () => {
+        expect(rewardsService.getRewardsByAccountNumberAndSubscriptions([], accountNumber))
+            .rejects.toEqual(new ArgumentInvalidError())
+    });
+};
+
 describe("RewardsService", () => {
     describe("Given correct EligibilityService the RewardsService gets instantiated", instantiationSuccess);
-    describe("Given incorrect EligibilityService the RewardsService constructor throws an exception", instantiationFailure);
+    describe("Given incorrect EligibilityService the RewardsService constructor throws an error", instantiationFailure);
     describe("Given the EligibilityService returns CUSTOMER_ELIGIBLE then return relevant rewards", returnRelevantRewards);
     describe("Given the EligibilityService throws a technical failure then return no rewards",
         returnNoRewardsWith({
@@ -115,7 +150,8 @@ describe("RewardsService", () => {
                     jest.fn().mockImplementation(() => Promise.resolve(CUSTOMER_INELIGIBLE))
             }
         )
-    )
+    );
+    describe("When the RewardsService is given invalid parameters then an error is thrown", exceptionalBehaviour);
 });
 
 
