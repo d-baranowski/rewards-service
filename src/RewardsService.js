@@ -1,7 +1,9 @@
 import {IncorrectEligibilityServiceError} from './RewardsService.errors';
 import CHANNELS from './Channels';
 import REWARDS from './Rewards';
+import ArgumentInvalidError from './ArgumentInvalidError';
 import {ELIGIBILITY_SERVICE_OUTPUT, EligibilityServiceTechnicalFailureError} from './EligibilitySericeOutput';
+
 
 export default class RewardsService {
     constructor(eligibilityService) {
@@ -13,6 +15,7 @@ export default class RewardsService {
     }
 
     getRewardsByAccountNumberAndSubscriptions = async (accountNumber, channelSubscriptions) => {
+        this.validateArguments(accountNumber, channelSubscriptions);
         let customerEligibility = null;
         let rewards = [];
 
@@ -35,6 +38,17 @@ export default class RewardsService {
         }
 
         return rewards;
+    };
+
+    validateArguments = (accountNumber, channelSubscriptions) => {
+        if (!accountNumber) {
+            console.log("Errors ziom!");
+            throw new ArgumentInvalidError("No accountNumber provided");
+        }
+        if (!channelSubscriptions || !typeof channelSubscriptions[Symbol.iterator] === 'function') {
+            console.log("Errors ziom!!!");
+            throw new ArgumentInvalidError("channelSubscriptions need to be iterable");
+        }
     };
 
     getRewardByChannel = (channelSubscription) => {
