@@ -4,6 +4,7 @@ import CHANNELS from './Channels';
 import REWARDS from './Rewards';
 import {IncorrectEligibilityServiceError} from './RewardsService.errors';
 import ArgumentInvalidError from './ArgumentInvalidError';
+import InvalidAccountNumberError from './InvalidAccountNumberError';
 
 const { SPORTS, MUSIC, MOVIES } = CHANNELS;
 const { KARAOKE_PRO_MICROPHONE, CHAMPIONS_LEAGUE_FINAL_TICKET, PIRATES_OF_THE_CARIBBEAN_COLLECTION } = REWARDS;
@@ -133,6 +134,23 @@ const exceptionalBehaviour = async () => {
     });
 };
 
+const handleInvalidAccountNumber = async () => {
+    const accountNumber = "I'm invalid";
+
+    const eligibilityService = {
+        checkRewardsEligibilityByAccountNumber:
+            jest.fn().mockImplementation(() => Promise.reject(new InvalidAccountNumberError(accountNumber)))
+    };
+
+    const rewardsService = new RewardsService(eligibilityService);
+
+
+    test("RewardsService throws InvalidArguments error when only subscriptions are provided", async () => {
+        expect(rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber,[]))
+            .rejects.toEqual(new InvalidAccountNumberError())
+    });
+};
+
 describe("RewardsService", () => {
     describe("Given correct EligibilityService the RewardsService gets instantiated", instantiationSuccess);
     describe("Given incorrect EligibilityService the RewardsService constructor throws an error", instantiationFailure);
@@ -141,17 +159,18 @@ describe("RewardsService", () => {
         returnNoRewardsWith({
             checkRewardsEligibilityByAccountNumber:
                 jest.fn().mockImplementation(() => Promise.reject(new EligibilityServiceTechnicalFailureError()))
-            }
-        )
+            })
     );
     describe("Given the EligibilityService returns CUSTOMER_INELIGIBLE then return no rewards",
         returnNoRewardsWith({
                 checkRewardsEligibilityByAccountNumber:
                     jest.fn().mockImplementation(() => Promise.resolve(CUSTOMER_INELIGIBLE))
-            }
-        )
+            })
     );
+    describe("Given the EligibilityService throws InvalidAccountNumber then return no rewards and notify the client",
+        handleInvalidAccountNumber);
     describe("When the RewardsService is given invalid parameters then an error is thrown", exceptionalBehaviour);
+
 });
 
 
