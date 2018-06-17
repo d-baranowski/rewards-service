@@ -6,6 +6,7 @@ import {IncorrectEligibilityServiceError} from './RewardsService.errors';
 
 const { SPORTS, MUSIC, MOVIES } = CHANNELS;
 const { KARAOKE_PRO_MICROPHONE, CHAMPIONS_LEAGUE_FINAL_TICKET, PIRATES_OF_THE_CARIBBEAN_COLLECTION } = REWARDS;
+const { CUSTOMER_ELIGIBLE, CUSTOMER_INELIGIBLE } = ELIGIBILITY_SERVICE_OUTPUT;
 
 const instantiationSuccess = () => {
     const eligibilityService = {
@@ -35,7 +36,7 @@ const argumentPassingTest = (rewardsService, accountNumber, eligibilityService) 
 const returnRelevantRewards = () => {
     const eligibilityService = {
         checkRewardsEligibilityByAccountNumber:
-            jest.fn().mockResolvedValue(ELIGIBILITY_SERVICE_OUTPUT.CUSTOMER_ELIGIBLE)
+            jest.fn().mockResolvedValue(CUSTOMER_ELIGIBLE)
     };
 
     const rewardsService = new RewardsService(eligibilityService);
@@ -105,6 +106,13 @@ describe("RewardsService", () => {
         returnNoRewardsWith({
             checkRewardsEligibilityByAccountNumber:
                 jest.fn().mockImplementation(() => Promise.reject(new EligibilityServiceTechnicalFailureError()))
+            }
+        )
+    );
+    describe("Given the EligibilityService returns CUSTOMER_INELIGIBLE then return no rewards",
+        returnNoRewardsWith({
+                checkRewardsEligibilityByAccountNumber:
+                    jest.fn().mockImplementation(() => Promise.resolve(CUSTOMER_INELIGIBLE))
             }
         )
     )

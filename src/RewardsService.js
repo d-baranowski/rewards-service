@@ -27,7 +27,7 @@ export default class RewardsService {
         }
 
         const { CUSTOMER_ELIGIBLE } = ELIGIBILITY_SERVICE_OUTPUT;
-        
+
         if (customerEligibility === CUSTOMER_ELIGIBLE) {
             for (const subscription of channelSubscriptions) {
                 rewards = [...rewards, this.getRewardByChannel(subscription)]
