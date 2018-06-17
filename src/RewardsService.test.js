@@ -1,5 +1,5 @@
 import RewardsService from './RewardsService';
-import ELIGIBILITY_SERVICE_OUTPUT from './EligibilitySericeOutput';
+import {EligibilityServiceTechnicalFailureError, ELIGIBILITY_SERVICE_OUTPUT} from './EligibilitySericeOutput';
 import CHANNELS from './Channels';
 import REWARDS from './Rewards';
 import {IncorrectEligibilityServiceError} from './RewardsService.errors';
@@ -20,17 +20,26 @@ const instantiationSuccess = () => {
 
 const instantiationFailure = () => {
     test("RewardsService construction fails", () => {
-        expect(() => new RewardsService({})).toThrow(IncorrectEligibilityServiceError)
+        expect(() => new RewardsService({})).toThrow(new IncorrectEligibilityServiceError())
     });
+};
+
+const argumentPassingTest = (rewardsService, accountNumber, eligibilityService) => {
+    test("RewardsService passes correct arguments to EligibilityService", async () => {
+        await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [SPORTS]);
+        expect(eligibilityService.checkRewardsEligibilityByAccountNumber.mock.calls.length).toBe(1);
+        expect(eligibilityService.checkRewardsEligibilityByAccountNumber.mock.calls[0][0]).toBe(accountNumber);
+    })
 };
 
 const returnRelevantRewards = () => {
     const eligibilityService = {
-        checkRewardsEligibilityByAccountNumber: jest.fn(() => ELIGIBILITY_SERVICE_OUTPUT.CUSTOMER_ELIGIBLE)
+        checkRewardsEligibilityByAccountNumber:
+            jest.fn().mockResolvedValue(ELIGIBILITY_SERVICE_OUTPUT.CUSTOMER_ELIGIBLE)
     };
 
     const rewardsService = new RewardsService(eligibilityService);
-    const accountNumber = "SAMPLE_ACCOUNT_NUMBER";
+    const accountNumber = 123456;
 
     beforeEach(() => {
         eligibilityService.checkRewardsEligibilityByAccountNumber.mockClear()
@@ -56,17 +65,49 @@ const returnRelevantRewards = () => {
         expect(result).not.toContain(KARAOKE_PRO_MICROPHONE);
     });
 
-    test("RewardsService passes correct arguments to EligibilityService", async () => {
-        await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [SPORTS]);
-        expect(eligibilityService.checkRewardsEligibilityByAccountNumber.mock.calls.length).toBe(1);
-        expect(eligibilityService.checkRewardsEligibilityByAccountNumber.mock.calls[0][0]).toBe(accountNumber);
-    })
+    argumentPassingTest(rewardsService, accountNumber, eligibilityService);
+};
+
+const returnNoRewardsWith = (eligibilityService) => () => {
+    const rewardsService = new RewardsService(eligibilityService);
+    const accountNumber = 654321;
+
+    beforeEach(() => {
+        eligibilityService.checkRewardsEligibilityByAccountNumber.mockClear()
+    });
+
+    test("RewardsService returns no rewards for SPORTS", async () => {
+        const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [SPORTS]);
+        expect(result.length).toBe(0);
+    });
+
+    test("RewardsService returns no rewards for MUSIC", async () => {
+        const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MUSIC]);
+        expect(result.length).toBe(0);
+    });
+
+    test("RewardsService returns no rewards for MOVIES", async () => {
+        const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MOVIES]);
+        expect(result.length).toBe(0);
+    });
+
+    test("RewardsService returns no rewards for multiple channels", async () => {
+        const result = await rewardsService.getRewardsByAccountNumberAndSubscriptions(accountNumber, [MOVIES, MUSIC]);
+        expect(result.length).toBe(0);
+    });
 };
 
 describe("RewardsService", () => {
     describe("Given correct EligibilityService the RewardsService gets instantiated", instantiationSuccess);
     describe("Given incorrect EligibilityService the RewardsService constructor throws an exception", instantiationFailure);
     describe("Given the EligibilityService returns CUSTOMER_ELIGIBLE then return relevant rewards", returnRelevantRewards);
+    describe("Given the EligibilityService throws a technical failure then return no rewards",
+        returnNoRewardsWith({
+            checkRewardsEligibilityByAccountNumber:
+                jest.fn().mockImplementation(() => Promise.reject(new EligibilityServiceTechnicalFailureError()))
+            }
+        )
+    )
 });
 
 

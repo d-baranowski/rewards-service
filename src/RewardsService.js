@@ -1,22 +1,33 @@
 import {IncorrectEligibilityServiceError} from './RewardsService.errors';
 import CHANNELS from './Channels';
 import REWARDS from './Rewards';
-import ELIGIBILITY_SERVICE_OUTPUT from './EligibilitySericeOutput';
+import {ELIGIBILITY_SERVICE_OUTPUT, EligibilityServiceTechnicalFailureError} from './EligibilitySericeOutput';
 
 export default class RewardsService {
     constructor(eligibilityService) {
         if (!eligibilityService || !eligibilityService.checkRewardsEligibilityByAccountNumber) {
-            throw IncorrectEligibilityServiceError;
+            throw new IncorrectEligibilityServiceError();
         }
 
         this.eligibilityService = eligibilityService;
     }
 
     getRewardsByAccountNumberAndSubscriptions = async (accountNumber, channelSubscriptions) => {
-        const customerEligibility = await this.eligibilityService.checkRewardsEligibilityByAccountNumber(accountNumber);
-        const { CUSTOMER_ELIGIBLE } = ELIGIBILITY_SERVICE_OUTPUT;
+        let customerEligibility = null;
         let rewards = [];
 
+        try {
+            customerEligibility = await this.eligibilityService.checkRewardsEligibilityByAccountNumber(accountNumber);
+        } catch (err) {
+            if (err instanceof EligibilityServiceTechnicalFailureError) {
+                return rewards;
+            } else {
+                throw err;
+            }
+        }
+
+        const { CUSTOMER_ELIGIBLE } = ELIGIBILITY_SERVICE_OUTPUT;
+        
         if (customerEligibility === CUSTOMER_ELIGIBLE) {
             for (const subscription of channelSubscriptions) {
                 rewards = [...rewards, this.getRewardByChannel(subscription)]

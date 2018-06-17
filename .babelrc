@@ -1,10 +1,12 @@
 {
-  "presets": ["env"],
-  "env": {
-    "test": {
-      "presets": ["env"],
-      "plugins": ["transform-class-properties"]
-    }
-  },
-  "plugins": ["transform-class-properties"]
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": "current"
+      }
+    }]
+  ],
+  "plugins": [
+    "transform-class-properties"
+  ]
 }
