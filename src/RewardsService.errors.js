@@ -1,0 +1,1 @@
+export const IncorrectEligibilityServiceError = new Error("Incorrect EligibilityService provided");
